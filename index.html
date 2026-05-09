@@ -7,72 +7,81 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card:hover { transform: scale(1.05); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
-        .modal { animation: fadeIn 0.3s ease-out; }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        body { font-family: 'Roboto', system-ui, sans-serif; }
+        .material-card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .material-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 12px 24px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+        }
+        .md-btn {
+            transition: background-color 0.2s;
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-slate-100 min-h-screen">
 
     <!-- Loader -->
     <div id="loader" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100]">
-        <div class="relative flex flex-col items-center">
-            <svg id="loadingCircle" width="90" height="90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#ef4444" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="50" stroke-linecap="round"/>
+        <div class="flex flex-col items-center">
+            <svg id="loadingCircle" width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#4285f4" stroke-width="8" stroke-dasharray="251" stroke-dashoffset="60" stroke-linecap="round"/>
             </svg>
-            <div class="absolute inset-0 flex items-center justify-center text-red-500 text-xs font-bold tracking-[3px] mt-1">LOADING</div>
+            <div class="mt-4 text-blue-400 text-sm font-medium tracking-widest">LOADING</div>
         </div>
     </div>
 
     <!-- Age Gate -->
-    <div id="ageGate" class="fixed inset-0 bg-black/95 flex items-center justify-center z-50 hidden">
-        <div class="bg-zinc-900 p-10 rounded-3xl max-w-md text-center border border-red-900">
-            <h1 class="text-4xl font-black mb-6 text-red-500">VORTEX</h1>
-            <p class="text-2xl mb-8">You must be 18+ to enter</p>
-            <button onclick="enterSite()" class="bg-red-600 hover:bg-red-700 w-full py-4 rounded-2xl text-xl font-semibold">ENTER - I AM 18 OR OLDER</button>
+    <div id="ageGate" class="fixed inset-0 bg-black/95 flex items-center justify-center z-50">
+        <div class="bg-zinc-900 p-10 rounded-3xl max-w-sm text-center border border-zinc-700">
+            <h1 class="text-5xl font-bold text-blue-400 mb-4">VORTEX</h1>
+            <p class="text-xl mb-8">18+ Only</p>
+            <button onclick="enterSite()" class="md-btn bg-blue-600 hover:bg-blue-700 w-full py-4 rounded-xl text-lg font-medium">I AM 18 OR OLDER - ENTER</button>
         </div>
     </div>
 
     <!-- Navbar -->
-    <nav class="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center text-2xl font-black">V</div>
-                <h1 class="text-3xl font-bold">Vortex</h1>
+    <nav class="bg-zinc-900 border-b border-zinc-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-9 h-9 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl font-bold">V</div>
+                <h1 class="text-2xl font-medium">Vortex NSFW</h1>
             </div>
-            <div class="flex gap-6">
-                <button onclick="switchTab(0)" id="tab0" class="tab-btn active px-6 py-2 text-lg hover:text-red-400">VIDEOS</button>
-                <button onclick="switchTab(1)" id="tab1" class="tab-btn px-6 py-2 text-lg hover:text-red-400">IMAGES</button>
+            <div class="flex gap-2">
+                <button onclick="switchTab(0)" class="tab-btn active md-btn px-6 py-2 rounded-xl text-sm font-medium">VIDEOS</button>
+                <button onclick="switchTab(1)" class="tab-btn md-btn px-6 py-2 rounded-xl text-sm font-medium">IMAGES</button>
             </div>
-            <div class="flex-1 max-w-xl mx-8">
-                <input id="searchInput" type="text" placeholder="Search porn..." 
-                       class="w-full bg-zinc-800 border border-zinc-700 focus:border-red-500 rounded-3xl px-6 py-4 text-lg outline-none"
+            <div class="flex-1 max-w-md mx-6">
+                <input id="searchInput" type="text" placeholder="Search..." 
+                       class="w-full bg-zinc-800 border border-zinc-700 focus:border-blue-500 rounded-3xl px-5 py-3 outline-none text-sm"
                        onkeypress="if(event.key==='Enter') performSearch()">
             </div>
         </div>
     </nav>
 
     <div class="max-w-7xl mx-auto px-6 py-8">
-        <div id="content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+        <div id="content" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
     </div>
 
     <!-- Video Modal -->
-    <div id="videoModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50" onclick="if(event.target.id==='videoModal')hideModal()">
-        <div class="bg-zinc-900 rounded-3xl max-w-5xl w-full mx-4 overflow-hidden" onclick="event.stopImmediatePropagation()">
-            <div class="p-4 flex justify-between border-b border-zinc-800">
-                <h2 id="modalTitle" class="font-semibold text-xl"></h2>
-                <button onclick="hideModal()" class="text-4xl text-slate-400 hover:text-white">×</button>
+    <div id="videoModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50" onclick="if(event.target.id==='videoModal') hideModal()">
+        <div class="bg-zinc-900 rounded-3xl max-w-4xl w-full mx-4 overflow-hidden" onclick="event.stopImmediatePropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-zinc-700">
+                <h2 id="modalTitle" class="font-medium"></h2>
+                <button onclick="hideModal()" class="text-3xl text-slate-400 hover:text-white">×</button>
             </div>
             <div class="aspect-video bg-black">
-                <iframe id="videoPlayer" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+                <iframe id="videoPlayer" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
             </div>
         </div>
     </div>
 
     <!-- Image Modal -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50" onclick="if(event.target.id==='imageModal')hideImageModal()">
-        <img id="lightboxImg" class="max-h-[90vh] max-w-[90vw] rounded-3xl" onclick="event.stopImmediatePropagation()">
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4" onclick="if(event.target.id==='imageModal') hideImageModal()">
+        <img id="lightboxImg" class="max-h-[90vh] max-w-full rounded-2xl shadow-2xl" onclick="event.stopImmediatePropagation()">
     </div>
 
     <script>
@@ -80,26 +89,22 @@
         let currentTab = 0;
 
         function showLoader() {
-            const loader = document.getElementById("loader");
-            loader.classList.remove("hidden");
-            loader.classList.add("flex");
-            gsap.fromTo("#loadingCircle circle", 
-                {rotate: 0, strokeDashoffset: 264}, 
-                {rotate: 360, strokeDashoffset: 50, duration: 1.4, repeat: -1, ease: "none"}
-            );
+            const l = document.getElementById("loader");
+            l.classList.remove("hidden");
+            l.classList.add("flex");
+            gsap.to("#loadingCircle circle", {rotation: 360, duration: 1.2, repeat: -1, ease: "none"});
         }
 
         function hideLoader() {
-            const loader = document.getElementById("loader");
-            loader.classList.add("hidden");
-            loader.classList.remove("flex");
+            const l = document.getElementById("loader");
+            l.classList.add("hidden");
+            l.classList.remove("flex");
         }
 
-        async function fetchWithLoader(url) {
+        async function fetchData(url) {
             showLoader();
             try {
                 const res = await fetch(proxy + encodeURIComponent(url));
-                if (!res.ok) throw new Error('API error');
                 return await res.json();
             } finally {
                 hideLoader();
@@ -107,85 +112,89 @@
         }
 
         async function loadVideos(q = "") {
-            const data = await fetchWithLoader(`https://www.eporner.com/api/v2/video/search/?query=${encodeURIComponent(q)}&per_page=24&order=latest`);
-            const container = document.getElementById("content");
-            container.innerHTML = "";
-            if (data.videos) {
-                data.videos.forEach(v => {
-                    const div = document.createElement("div");
-                    div.className = "card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer";
-                    div.innerHTML = `
-                        <img src="${v.thumb}" class="w-full aspect-video object-cover">
-                        <div class="p-4">
-                            <p class="line-clamp-2 font-medium">${v.title}</p>
-                            <p class="text-red-400 text-sm mt-1">${v.views} views</p>
-                        </div>
-                    `;
-                    div.onclick = () => {
-                        document.getElementById("modalTitle").textContent = v.title;
-                        document.getElementById("videoPlayer").src = `https://www.eporner.com/embed/${v.id}`;
-                        document.getElementById("videoModal").classList.remove("hidden");
-                        document.getElementById("videoModal").classList.add("flex");
-                    };
-                    container.appendChild(div);
-                });
+            const data = await fetchData(`https://www.eporner.com/api/v2/video/search/?query=${encodeURIComponent(q)}&per_page=24&order=latest`);
+            const cont = document.getElementById("content");
+            cont.innerHTML = "";
+            if (!data.videos || data.videos.length === 0) {
+                cont.innerHTML = `<div class="col-span-full text-center py-20 text-slate-400">No results</div>`;
+                return;
             }
-        }
-
-        async function loadImages(q = "") {
-            const data = await fetchWithLoader(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=30&tags=${encodeURIComponent(q)}`);
-            const container = document.getElementById("content");
-            container.innerHTML = "";
-            data.forEach(p => {
-                const div = document.createElement("div");
-                div.className = "card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer";
-                div.innerHTML = `<img src="${p.preview_url}" class="w-full aspect-square object-cover">`;
-                div.onclick = () => {
-                    document.getElementById("lightboxImg").src = p.file_url;
-                    document.getElementById("imageModal").classList.remove("hidden");
-                    document.getElementById("imageModal").classList.add("flex");
+            data.videos.forEach(v => {
+                const card = document.createElement("div");
+                card.className = "material-card bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer";
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${proxy}${encodeURIComponent(v.thumb)}" class="w-full aspect-video object-cover" alt="">
+                        <div class="absolute bottom-2 right-2 bg-black/70 px-2 py-0.5 text-xs rounded">${Math.floor(v.length_min/60)}:${(v.length_min%60).toString().padStart(2,'0')}</div>
+                    </div>
+                    <div class="p-4">
+                        <p class="line-clamp-2 text-sm font-medium">${v.title}</p>
+                        <p class="text-blue-400 text-xs mt-2">${v.views} views</p>
+                    </div>
+                `;
+                card.onclick = () => {
+                    document.getElementById("modalTitle").textContent = v.title;
+                    document.getElementById("videoPlayer").src = `https://www.eporner.com/embed/${v.id}`;
+                    document.getElementById("videoModal").classList.remove("hidden");
+                    document.getElementById("videoModal").classList.add("flex");
                 };
-                container.appendChild(div);
+                cont.appendChild(card);
             });
         }
 
-        function hideModal() {
-            const m = document.getElementById("videoModal");
-            m.classList.add("hidden");
-            m.classList.remove("flex");
-            document.getElementById("videoPlayer").src = "";
-        }
-
-        function hideImageModal() {
-            const m = document.getElementById("imageModal");
-            m.classList.add("hidden");
-            m.classList.remove("flex");
+        async function loadImages(q = "") {
+            const data = await fetchData(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=30&tags=${encodeURIComponent(q)}`);
+            const cont = document.getElementById("content");
+            cont.innerHTML = "";
+            if (!data || data.length === 0) {
+                cont.innerHTML = `<div class="col-span-full text-center py-20 text-slate-400">No results</div>`;
+                return;
+            }
+            data.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "material-card bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer";
+                card.innerHTML = `<img src="${proxy}${encodeURIComponent(p.preview_url)}" class="w-full aspect-square object-cover">`;
+                card.onclick = () => {
+                    document.getElementById("lightboxImg").src = proxy + encodeURIComponent(p.file_url);
+                    document.getElementById("imageModal").classList.remove("hidden");
+                    document.getElementById("imageModal").classList.add("flex");
+                };
+                cont.appendChild(card);
+            });
         }
 
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===tab));
             document.getElementById("content").innerHTML = "";
-            if (tab===0) loadVideos();
+            if (tab === 0) loadVideos();
             else loadImages();
         }
 
         function performSearch() {
             const q = document.getElementById("searchInput").value.trim();
-            document.getElementById("content").innerHTML = "";
-            if (currentTab===0) loadVideos(q);
+            if (currentTab === 0) loadVideos(q);
             else loadImages(q);
         }
 
+        function hideModal() {
+            const m = document.getElementById("videoModal");
+            m.classList.add("hidden"); m.classList.remove("flex");
+            document.getElementById("videoPlayer").src = "";
+        }
+
+        function hideImageModal() {
+            const m = document.getElementById("imageModal");
+            m.classList.add("hidden"); m.classList.remove("flex");
+        }
+
         function enterSite() {
-            document.getElementById("ageGate").classList.add("hidden");
+            document.getElementById("ageGate").style.display = "none";
             loadVideos();
         }
 
-        // Init
         window.onload = () => {
-            document.getElementById("ageGate").classList.remove("hidden");
-            document.getElementById("ageGate").classList.add("flex");
+            document.getElementById("ageGate").style.display = "flex";
         };
     </script>
 </body>
