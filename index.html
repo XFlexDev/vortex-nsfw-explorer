@@ -5,14 +5,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vortex NSFW Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .card:hover { transform: scale(1.05); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
+        .modal { animation: fadeIn 0.3s ease-out; }
     </style>
 </head>
 <body class="bg-zinc-950 text-slate-100 min-h-screen">
-    <!-- Full index.html content from previous -->
-    <!-- (I will put the full code here in actual call) -->
+
+    <!-- Loader -->
+    <div id="loader" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100]">
+        <div class="relative flex flex-col items-center">
+            <svg id="loadingCircle" width="90" height="90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#ef4444" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="50" stroke-linecap="round"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center text-red-500 text-xs font-bold tracking-[3px] mt-1">LOADING</div>
+        </div>
+    </div>
+
+    <!-- Age Gate -->
+    <div id="ageGate" class="fixed inset-0 bg-black/95 flex items-center justify-center z-50 hidden">
+        <div class="bg-zinc-900 p-10 rounded-3xl max-w-md text-center border border-red-900">
+            <h1 class="text-4xl font-black mb-6 text-red-500">VORTEX</h1>
+            <p class="text-2xl mb-8">You must be 18+ to enter</p>
+            <button onclick="enterSite()" class="bg-red-600 hover:bg-red-700 w-full py-4 rounded-2xl text-xl font-semibold">ENTER - I AM 18 OR OLDER</button>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center text-2xl font-black">V</div>
+                <h1 class="text-3xl font-bold">Vortex</h1>
+            </div>
+            <div class="flex gap-6">
+                <button onclick="switchTab(0)" id="tab0" class="tab-btn active px-6 py-2 text-lg hover:text-red-400">VIDEOS</button>
+                <button onclick="switchTab(1)" id="tab1" class="tab-btn px-6 py-2 text-lg hover:text-red-400">IMAGES</button>
+            </div>
+            <div class="flex-1 max-w-xl mx-8">
+                <input id="searchInput" type="text" placeholder="Search porn..." 
+                       class="w-full bg-zinc-800 border border-zinc-700 focus:border-red-500 rounded-3xl px-6 py-4 text-lg outline-none"
+                       onkeypress="if(event.key==='Enter') performSearch()">
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div id="content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50" onclick="if(event.target.id==='videoModal')hideModal()">
+        <div class="bg-zinc-900 rounded-3xl max-w-5xl w-full mx-4 overflow-hidden" onclick="event.stopImmediatePropagation()">
+            <div class="p-4 flex justify-between border-b border-zinc-800">
+                <h2 id="modalTitle" class="font-semibold text-xl"></h2>
+                <button onclick="hideModal()" class="text-4xl text-slate-400 hover:text-white">×</button>
+            </div>
+            <div class="aspect-video bg-black">
+                <iframe id="videoPlayer" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50" onclick="if(event.target.id==='imageModal')hideImageModal()">
+        <img id="lightboxImg" class="max-h-[90vh] max-w-[90vw] rounded-3xl" onclick="event.stopImmediatePropagation()">
+    </div>
+
+    <script>
+        const proxy = "https://corsproxy.io/?";
+        let currentTab = 0;
+
+        function showLoader() {
+            const loader = document.getElementById("loader");
+            loader.classList.remove("hidden");
+            loader.classList.add("flex");
+            gsap.fromTo("#loadingCircle circle", 
+                {rotate: 0, strokeDashoffset: 264}, 
+                {rotate: 360, strokeDashoffset: 50, duration: 1.4, repeat: -1, ease: "none"}
+            );
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById("loader");
+            loader.classList.add("hidden");
+            loader.classList.remove("flex");
+        }
+
+        async function fetchWithLoader(url) {
+            showLoader();
+            try {
+                const res = await fetch(proxy + encodeURIComponent(url));
+                if (!res.ok) throw new Error('API error');
+                return await res.json();
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function loadVideos(q = "") {
+            const data = await fetchWithLoader(`https://www.eporner.com/api/v2/video/search/?query=${encodeURIComponent(q)}&per_page=24&order=latest`);
+            const container = document.getElementById("content");
+            container.innerHTML = "";
+            if (data.videos) {
+                data.videos.forEach(v => {
+                    const div = document.createElement("div");
+                    div.className = "card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer";
+                    div.innerHTML = `
+                        <img src="${v.thumb}" class="w-full aspect-video object-cover">
+                        <div class="p-4">
+                            <p class="line-clamp-2 font-medium">${v.title}</p>
+                            <p class="text-red-400 text-sm mt-1">${v.views} views</p>
+                        </div>
+                    `;
+                    div.onclick = () => {
+                        document.getElementById("modalTitle").textContent = v.title;
+                        document.getElementById("videoPlayer").src = `https://www.eporner.com/embed/${v.id}`;
+                        document.getElementById("videoModal").classList.remove("hidden");
+                        document.getElementById("videoModal").classList.add("flex");
+                    };
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        async function loadImages(q = "") {
+            const data = await fetchWithLoader(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=30&tags=${encodeURIComponent(q)}`);
+            const container = document.getElementById("content");
+            container.innerHTML = "";
+            data.forEach(p => {
+                const div = document.createElement("div");
+                div.className = "card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer";
+                div.innerHTML = `<img src="${p.preview_url}" class="w-full aspect-square object-cover">`;
+                div.onclick = () => {
+                    document.getElementById("lightboxImg").src = p.file_url;
+                    document.getElementById("imageModal").classList.remove("hidden");
+                    document.getElementById("imageModal").classList.add("flex");
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function hideModal() {
+            const m = document.getElementById("videoModal");
+            m.classList.add("hidden");
+            m.classList.remove("flex");
+            document.getElementById("videoPlayer").src = "";
+        }
+
+        function hideImageModal() {
+            const m = document.getElementById("imageModal");
+            m.classList.add("hidden");
+            m.classList.remove("flex");
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===tab));
+            document.getElementById("content").innerHTML = "";
+            if (tab===0) loadVideos();
+            else loadImages();
+        }
+
+        function performSearch() {
+            const q = document.getElementById("searchInput").value.trim();
+            document.getElementById("content").innerHTML = "";
+            if (currentTab===0) loadVideos(q);
+            else loadImages(q);
+        }
+
+        function enterSite() {
+            document.getElementById("ageGate").classList.add("hidden");
+            loadVideos();
+        }
+
+        // Init
+        window.onload = () => {
+            document.getElementById("ageGate").classList.remove("hidden");
+            document.getElementById("ageGate").classList.add("flex");
+        };
+    </script>
 </body>
 </html>
