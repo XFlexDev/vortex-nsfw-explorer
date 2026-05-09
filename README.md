@@ -1,18 +1,26 @@
 # Vortex NSFW Explorer
 
-Professional adult content browser using public APIs.
+A clean, fast and fully functional NSFW video + image explorer using public APIs.
+
+**Live Site:** https://XFlexDev.github.io/vortex-nsfw-explorer
 
 ## Features
-- Search and browse porn videos (Eporner API)
-- Browse NSFW images (Rule34 API)
-- Clean dark modern UI
-- Fully static - works on GitHub Pages
+- Search Eporner videos
+- Browse Rule34 images
+- Responsive dark UI
+- Video player modal
+- Image lightbox
+- Age verification gate
 
-## Live Demo
-https://XFlexDev.github.io/vortex-nsfw-explorer
+## Tech Stack
+- HTML + Tailwind CSS
+- Vanilla JavaScript
+- Public APIs (no backend)
+- GitHub Pages + Actions
 
 ## APIs Used
-- Videos: https://www.eporner.com/api/v2/
-- Images: https://api.rule34.xxx/
+- Videos: Eporner Public API
+- Images: Rule34.xxx Public API
 
-**Note**: This site is 18+ only.
+---
+**Warning:** This site contains adult content (18+ only).
